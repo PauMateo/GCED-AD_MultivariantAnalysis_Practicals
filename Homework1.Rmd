@@ -1,0 +1,143 @@
+---
+title: "AD - Multivariant Analysis"
+subtitle: "Homework 1"
+author: "Pau Mateo, Arnau Biosca, Pau Fernández"
+date: "2024-05-08"
+output: html_document
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+{r}
+data_euroleague <- read.csv2("C:/Users/pauma/OneDrive/Escritorio/UNI/2n/AD/anàlisi_multivariant/Homeworks/Homework1/euroleague_22_23.csv",
+                             stringsAsFactors=FALSE,  na.strings="")
+
+1. Exploratory data analysis.
+
+Empezemos con un análisis exploratorio de los datos con los que vamos a trabajar.
+
+{r}
+head(data_euroleague, n=10L)
+summary(data_euroleague)
+
+a) Discard the variable "No" from the data set.
+
+Como podemos ver, la variable No simplemente indica el número de fila i por tanto no nos interesa, y la podemos quitar.
+
+{r}
+data <- data_euroleague[ -c(1) ]
+head(data, n = 8L)
+
+b) Split variable "Min" using strsplit() function. Give the name aux to the output. The first element of each row will show the minutes that the player played in total.
+
+{r}
+aux <- strsplit(data$Min, split=":")
+
+c) Add a numerical variable to the data set named "Min 2" which shows how many minutes each player played in the game.
+
+{r}
+Min2 <- matrix(unlist(aux), ncol = 3, byrow = TRUE)[,1]
+data$Min2 <- as.numeric(Min2)
+head(data)
+
+La variable Min también la podemos quitar del dataset, pues solo nos interesa el total de minutos jugados por cada jugador, que ya hemos añadido a la nueva variable Min2.
+
+{r}
+# L'HEM DE TREURE???
+data <- data[ -c(6) ]
+
+d) Check the structure of the data and assign correct type to each variable considering whether it is a categorical or a numerical variable.
+
+Las variables TEAM, PLAYER y POSITION son variables categóricas y por tanto las tenemos que convertir a factores. El resto de variables son numéricas.
+
+{r}
+data$TEAM     <- factor(data$TEAM)
+data$PLAYER   <- factor(data$PLAYER)
+data$POSITION <- factor(data$POSITION)
+
+2. Application of PCA.
+
+a) Apply PCA on all the scaled numerical variables in the data set by using PCA() function in FactoMineR package. Treat the categorical variables and the variable "PIR" as supplemantary variables using arguments quali.sup and quanti.sup correctly.
+
+\@arnau \@pau per si no sabeu què són supplementary variables:
+
+Supplementary variables in PCA (Principal Component Analysis) are additional variables that were not used in the computation of the principal components but are projected onto the space spanned by the principal components. These variables can be categorical or continuous and are typically included to explore their relationships with the principal components or to visualize their effects on the data.
+
+There are two main types of supplementary variables:
+
+Quantitative Supplementary Variables: These are additional continuous variables that are not included in the PCA analysis but are projected onto the principal component space to observe their relationships with the principal components. These variables can help in interpreting the principal components in terms of the original variables.
+
+Qualitative Supplementary Variables: These are categorical variables that are not part of the PCA analysis but are represented as supplementary points in the principal component space. They are projected onto the space spanned by the principal components to observe how they relate to the principal components and the original variables.
+
+{r, warning=F}
+#install.packages("FactorMineR")
+#install.packages("factoextra")
+library(FactoMineR)
+library(factoextra)
+
+#Los índexos de las variables categóricas son: c(1,2,3)
+#El índex de la variable "PIR" es: 21
+
+data.pca <- PCA(data, quali.sup = c(1,2,3), quanti.sup = 20)
+
+
+{r}
+fviz_pca_ind(data.pca,
+             geom.ind = "point", # show points only (nbut not "text")
+             col.ind = data$POSITION, # color by groups
+             palette = c("#00AFBB", "#E7B800", "#FC4E07"),
+             addEllipses = TRUE, # Concentration ellipses
+             legend.title = "Groups"
+             )
+fviz_pca_ind(data.pca,
+             geom.ind = "point", # show points only (nbut not "text")
+             col.ind = data$TEAM, # color by groups
+             palette = c("#00AFBB", "#E7B800", "#FC4E07", "black"),
+             addEllipses = TRUE, # Concentration ellipses
+             legend.title = "Groups"
+             )
+
+----------------------- interpretar gràfics ----------------------
+
+Podemos ver que la variable suplementaria PIR está altamente correlacionada con la componente principal 1. La variable PIR es el Performance Index Rating, que es una medida que __________
+
+b) How many components should be extracted? Decide on the number of components considering eigenvalues.
+
+Para decidir quantos componentes debemos extraer, nos debemos fijar en la cantidad de variabilidad que explican los diferentes componientes principales. Para esto, miremos qué valores tienen los valores propios del PCA realizado.
+
+{r}
+data.pca$eig
+plot(data.pca$eig[,1], type="o", main="Scree Plot", col="#FC4E07")
+plot(data.pca$eig[,2], type="o", main="Percentage of variance", col="#E7B800")
+plot(data.pca$eig[,3], type="o", main="Cumulative percentage of variance", col="#0073C2FF")
+
+Con sólo la primera componente ya se puede explicar el 45% de la variabilidad de los datos. A medida que vamos augmentando el número de componentes va augmentando también tal porcentage, hasta llegar al 80.6% con 5 componientes.
+
+c) Use plot.PCA() function to show correlations between variables and the extracted dimensions by changing "axes" according to the dimension of interest. (For the variables you should use the argument choix = "var"). Interpret the loadings/correlations of variables at each dimension.
+
+d) Interpret variable plots. How can each dimension be named?
+
+e) Show individuals plots changing argument choix="ind" in plot.PCA() function and interpret the important findings.
+
+3. Application of MDS.
+
+a) Apply metric MDS using Euclidean distance on scaled numerical variables.
+
+b) Plot the data using the points on the first two coordinates using players positions as label.
+
+c) Interpret the plot.
+
+d) Calculate gower distance including variable "POSITION" to the data matrix.
+
+e) Apply metric MDS on gower distance matrix.
+
+f) Represent individuals plot on the first two coordinates.
+
+g) Use different categorical and numerical variables as labels so as to explain clusters that are constructed.
+
+h) Which MDS do you think better group the individuals? Why?
+
