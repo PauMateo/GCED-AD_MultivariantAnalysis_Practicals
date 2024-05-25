@@ -16,45 +16,51 @@ Import the data set "food-consumption.csv" that is related to consumption of cer
 **1. Application of Correspondence Analysis.**
 
 ```{r}
-food_nutrient <- read.csv2("C:/Users/pauma/OneDrive/Escritorio/UNI/2n/AD/anàlisi_multivariant/lab/Lab5_ClusterAnalysis/food_nutrient.csv", stringsAsFactors=TRUE, row.names=2)
+food.consumption <- read.csv("C:/Users/pauma/OneDrive/Escritorio/UNI/2n/AD/anàlisi_multivariant/Homeworks/Homework2/food-consumption.csv", stringsAsFactors=TRUE, row.names=1)
 ```
 
 ```{r}
-head(food_nutrient)
-```
-
-La primera columna solo sirve de indexación, la podemos quitar.
-
-```{r}
-food_nutrient <- food_nutrient[-c(1)]
-head(food_nutrient)
+head(food.consumption)
 ```
 
 **a) Remove observations with missing values using function na.omit().**
 
 ```{r}
-sum(is.na(food_nutrient))
+sum(is.na(food.consumption))
 ```
-
-Vemos que no tenemos *missing values* en este dataset.
+```{r}
+food.consumption = na.omit(food.consumption)
+sum(is.na(food.consumption))
+```
+:)
 
 **b) Apply correspondence analysis by using CA() function in FactoMineR.**
 
 ```{r}
 library(FactoMineR)
-res.ca <- CA(food_nutrient)
+res.ca <- CA(food.consumption)
 summary(res.ca)
 ```
 
 **c) How many dimensions would you need to extract? Why?**
 
-En este caso convendría extraer sólo las dos primeras dimensiones, ya que con éstas se consigue explicar un 98.486% de la variancia. Añadir una dimensión más solo augmentaria la varianza explicada en un 1.47%, y quitar la segunda dimensión nos dejaría con un 93.79% de la variabilidad explicada, que es significativamente menor que con la dos primeras dimensiones juntas.
+Tendríamos que extraer como mínimo 3 las tres primeras dimensiones para conseguir un porcentage decente de variabilidad explicada. Con sólo dos dimensiones tan solo llegaríamos a un 56%, que es demasiado poco, y con tres dimensiones llegamos a explicar un 69.757% de la variabilidad.
 
 **d) Plot the row and column profiles on the extracted dimensions.**
 
 ```{r}
 plot.CA(res.ca,axes = c(1,2))
+plot.CA(res.ca,axes = c(1,3))
 ```
+
+
+```{r}
+#3D plot
+res.ca_to_plot <- ca(food.consumption)
+plot3d.ca(res.ca_to_plot, dim=c(1,2,3))
+```
+
+
 
 **e) Interpret the plot(s) considering**
 
