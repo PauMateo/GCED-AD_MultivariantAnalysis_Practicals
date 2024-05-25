@@ -1,0 +1,46 @@
+---
+title: "Homework2"
+author: "Pau Mateo"
+date: "2024-05-25"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## AD - Homework 2
+
+**1. Application of Correspondence Analysis.**
+
+**a) Remove observations with missing values using function na.omit().**
+
+**b) Apply correspondence analysis by using CA() function in FactoMineR.**
+
+**c) How many dimensions would you need to extract? Why?**
+
+**d) Plot the row and column profiles on the extracted dimensions.**
+
+**e) Interpret the plot(s) considering**
+
+(i) similarities between countries,
+
+(ii) similarities between food categories.
+
+(iii) the relationship between food categories and countries.
+
+### 2. Application of Cluster Analysis.
+
+**a) Compute a distance matrix.**
+
+**b) Apply hierarchical cluster analysis to group countries according to their food consumption and plot dendrogram. (Try different methods but in the report just show the one that you prefer. Explain why you have chosen that method.)**
+
+**c) How many clusters do you think there are? (Considering the dendrogram plot)**
+
+**d) Draw an elbow plot showing within sum of squares per dimension. Interpret it.**
+
+**e) Apply k-means clustering according to the number of groups you have chosen.**
+
+**f) Compute the centroids (means) of the clusters and show them in a table.**
+
+**g) Interpret the most important characteristics of each cluster according to the summary table given in section (f).**
