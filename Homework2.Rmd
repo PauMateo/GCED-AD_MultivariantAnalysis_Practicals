@@ -52,10 +52,12 @@ Tendríamos que extraer como mínimo 3 las tres primeras dimensiones para conseg
 plot.CA(res.ca,axes = c(1,2))
 plot.CA(res.ca,axes = c(1,3))
 ```
-
+Para poder interpretar mejor los resultados, hemos usado también una representacion en 3D:
 
 ```{r}
 #3D plot
+# install.packages("ca") #
+library(ca)
 res.ca_to_plot <- ca(food.consumption)
 plot3d.ca(res.ca_to_plot, dim=c(1,2,3))
 ```
@@ -64,11 +66,36 @@ plot3d.ca(res.ca_to_plot, dim=c(1,2,3))
 
 **e) Interpret the plot(s) considering**
 
+
 (i) similarities between countries,
 
+Como ya era de esperar, podemos ver más separacion en las ciudades al plot de la dimensiones 1 y 2 que con las dimensiones 1 y 3 (ya que la dimensión dos explica más variabilidad de los datos). Por tanto, nos fijaremos primero en el plot de la dimensiones 1 y 2 y luego miraremos el segundo plot para terminar de comparar distancias entre ciudades que al primer plot estan cerca. És más fácil ver-lo en el plot 3D.
+
+Al primer plot vemos que Portugal y Italia estan claramente distanciadas del resto de ciudades, y comprovando también que están cerca la una de la otra al segundo plot, sabemos que estod dos pasíes se encuentran cerca considerando las 3 dimensiones extraídas. Al otro extremo, vemos un caso similar con Norway y Denmark, que estan también distanciadas del resto de países y cerca entre ellos, tanto en el primer plot como en el segundo.
+
+Luego hay otro grupo separado: Holland, England y Ireland, que en el primer plot parecen estar cerca entre todos. Pero al segundo plot vemos que realmente England y Ireland estan separadas de Holland. 
+
+El resto de países están bastant cerca los unos de los otros, más o menos centrados al origen, excepto quizás Francia, que se separa un poco del núcleo central.
+
 (ii) similarities between food categories.
+Siguiendo el mismo procedimiento obtenemos los siguiente:
+Yougurt esta claramente separado de totos los otros alimentos.
+Tin.soup esta también muy separado de los otros alimentos.
+Olive Oil y Garlic están muy distanciados del resto de alimentos, y podemos considerar que estan relativamente cerca.
+Frozen.fish, Frozen.bread y Frozen.veggies forman un pequño grupo separado del resto, pudiendo también añadir Sweetener, que se encuentra a igual distancia entre el núcelo central y este grupo.
+Instant.coffee, Tinned.fruit y Jam se separan del núcleo, pero tampoco forman un grupo explícitamente separado de el resto de alimentos, pues tienen algunos cerca, como Biscuits o Powder.soup, que ya consideramos que estàn al núcleo.
+
+El resto de alimentos se encuentran centrados al orígen, formando el núcleo mencionado, con algunos un poco más separados, como Real.coffee, Margarine y Potatoes.
+
+Podemos ver una clara separacion entre alimentos que podríamos considerar "sanos", o más saludables, y alimentos que tiran más hacia comida no tan saludable. Considerando las dimensiones 1 y 2, se ve que los alimentos menos saludables se sitúan hacia el primer quartil. La dimension 3 no contribuye de forma tan clara en este sentido, al menos a simple vista.
+
 
 (iii) the relationship between food categories and countries.
+Algunos de los grupos de países que hemos identificado estan cerca de grupos de alimentos:
+Portugal y Italy estan cerca de Garlic y Olive.oil. Más específicamente, Italy está muy cerca de Olive.oil y Portugal a medio camino entre Garlic y Olive.oil (considerando aún y así que está cerca de los dos). Eso indica que mucha gente de Italy y Portugal consume aceite de oliva y ajo.
+Norway y Denmark estan cerca del grupo de Frozen.fish, Crosp.bread y Frozen.veggies. England y Holland estan cerca de Jam, Tinned.fruit y instant.coffe, y son los países que más cerca estan de Tin.soup. Holland también esta cerca de Tinned.fruit y Instant.coffee pero no tanto de Jam.
+
+En conclusión, los resultados que hemos visto encajan bastante con lo que esperaríemos: los países nórdicos són los que comen más pescado, los países ingleses los que más comida en conserva consumen, Italia y Portugal los que más aceite de oliva y ajo utilizan... Y el resto de países son más neutros, lo que quiere decir que utilizan de forma más equilibrada todos los alimentos.
 
 ### 2. Application of Cluster Analysis.
 
