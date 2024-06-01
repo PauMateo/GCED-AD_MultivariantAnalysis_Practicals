@@ -1,0 +1,220 @@
+---
+title: "AD_projecte"
+author: "Pau Mateo"
+date: "2024-05-28"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r}
+data <- read.csv("C:/Users/pauma/OneDrive/Escritorio/UNI/2n/AD/anàlisi_multivariant/Pràctica/HousingData3.csv")
+```
+
+```{r, warning=FALSE}
+library(FactoMineR)
+library(factoextra)
+library(ggplot2)
+```
+
+# EXPLORATOY DATA ANALYSIS
+
+```{r}
+summary(data)
+```
+
+There are 14 attributes in each case of the dataset. They are:
+
+CRIM - per capita crime rate by town
+
+ZN - proportion of residential land zoned for lots over 25,000 sq.ft.
+
+INDUS - proportion of non-retail business acres per town.
+
+CHAS - Charles River dummy variable (1 if tract bounds river; 0 otherwise)
+
+NOX - nitric oxides concentration (parts per 10 million)
+
+RM - average number of rooms per dwelling
+
+AGE - proportion of owner-occupied units built prior to 1940
+
+DIS - weighted distances to five Boston employment centres
+
+RAD - index of accessibility to radial highways
+
+TAX - full-value property-tax rate per \$10,000
+
+PTRATIO - pupil-teacher ratio by town
+
+B - 1000(Bk - 0.63)\^2 where Bk is the proportion of blacks by town
+
+LSTAT - % lower status of the population
+
+MEDV - Median value of owner-occupied homes in \$1000's
+
+```{r}
+for (i in 1:14){
+  print(sum(is.na(data[,i]))/length(data[,i])*100)
+}
+
+# no missing values !!
+```
+
+No tenim mv, però veiem que la variable CHAS, que hauria de ser binària, pren alguns valors entremig de 0 i 1 en algunes ocasions. Arreglem aquests errors:
+
+```{r}
+data[data$CHAS != 0.0 & data$CHAS != 1.0, ]
+```
+
+Representen una fracció molt petita del conjunt total de dades, però tot i així considere-mho com a MV:
+
+```{r}
+mv_cols <- c(153,207,377,389,466,480,483)
+for(i in mv_cols){
+  data[i,]$CHAS <- NA
+}
+
+print(sum(is.na(data$CHAS))) #perfecte!
+data[mv_cols, c(1,2,3,4,5)]
+```
+
+MV imputation:
+
+```{r, warning=FALSE}
+  library(VIM)
+data_imputed <- kNN(data, k = 5)
+data_imputed[mv_cols, c(1,2,3,4,5)]
+```
+
+Perfecte!!
+
+```{r}
+data$CHAS <- data_imputed$CHAS
+summary(data$CHAS) #   :)
+```
+
+```{r}
+#convert to factor
+data$CHAS <- factor(data$CHAS)
+```
+
+```{r}
+for (i in 1:14){
+  if (i==4) next
+  hist(data[,i],main= paste(colnames(data)[i]), breaks = 15) #vaya distribucions de merda ... xd
+  print(colnames(data)[i])
+  print(shapiro.test(data[,i]))
+}
+```
+
+## Box-Cox tranformation using optimal lambda
+
+```{r}
+library(MASS)
+library(car)
+library(VGAM)
+
+data.BC <- data.frame(matrix(ncol = ncol(data), nrow = nrow(data)))
+colnames(data.BC) <- colnames(data)
+for (i in 1:14){
+  if (i==2 || i==4) next
+  #find best lambda for BoxCox transformation
+  boxcox_result <- boxcox(data[,i] ~ 1, lambda = seq(-5, 5, by = 0.1))
+  lambda_optimal <- boxcox_result$x[which.max(boxcox_result$y)]
+  print(lambda_optimal)
+  
+  #apply BoxCox transformation
+  name = colnames(data)[i]
+  if(lambda_optimal==0){
+    data.BC[,i] <- log(data[,i])
+  } else {
+    data.BC[,i] <- yeo.johnson(data[,i], lambda=lambda_optimal)
+  }
+  
+  hist(data.BC[,i], main= paste(colnames(data.BC)[i]), breaks = 15)
+  print(colnames(data.BC)[i])
+  print(shapiro.test(data.BC[,i]))
+}
+
+data.BC$ZN <- data$ZN
+```
+
+Seguim tenint una normalitat bastant bastant pèssima...
+
+```{r}
+library(corrplot)
+corrplot(cor(data[, colnames(data)!=c("CHAS")]))
+```
+
+## Outliers treatment
+
+```{r}
+for (i in 1:14){
+  if (i==4) next
+  boxplot(data[,i],main= paste(colnames(data.BC)[i])) #vaya distribucions de   merda ... xd
+}
+```
+
+B no hauríem de considerar treure els outliers...
+
+```{r}
+total = 0
+indexs = c()
+for (i in 1:14){
+  if (i %in% c(4,12)) next
+
+  lower_bound <- quantile(data.BC[,i], 0.025)
+  upper_bound <- quantile(data.BC[,i], 0.975)
+  outlier_ind <- which(data.BC[,i] < lower_bound | data.BC[,i] > upper_bound)
+  print(colnames(data.BC)[i])
+  print(sum(outlier_ind/outlier_ind))
+  
+  indexs = union(indexs, outlier_ind)
+}
+
+print(indexs)
+print(length(indexs))
+```
+
+Només tenim 506 files en total, són massa outliers per treurel's tots!!! proseguirem a l'anàlisi tenint en compte això, i a menys que ho trobem necessari, utilitzarem el dataset sense treure els outliers.
+
+```{r}
+data.BC.outl <- data[-indexs,]
+```
+
+```{r}
+corrplot(cor(data[, colnames(data)!=c("ZN", "CHAS")]))
+#quasi igual que abans
+```
+
+# Principal Components Analysis
+
+```{r}
+library(HSAUR)
+
+pca <- princomp(data.BC[, colnames(data)!=c("CHAS")], cor=TRUE)
+print("PCA whithout outliers treatment")
+summary(pca)
+
+
+
+print(" ")
+print(" ")
+print(" ")
+print("PCA with outliers treatment")
+pca.outl <- princomp(data.BC.outl[, colnames(data)!=c("CHAS")],cor=TRUE)
+summary(pca.outl)
+
+# necessitariem més dimensions... ja ens va bé no treure els outliers.
+```
+
+```{r}
+grup_colors <- c("blue", "green")
+biplot(pca)
+colnames(data.BC)
+```
