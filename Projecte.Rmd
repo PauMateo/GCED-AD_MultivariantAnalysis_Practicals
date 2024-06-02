@@ -142,6 +142,7 @@ for (i in 1:14){
 }
 
 data.BC$ZN <- data$ZN
+data.BC$CHAS <- data$CHAS
 ```
 
 Seguim tenint una normalitat bastant bastant pèssima...
@@ -214,7 +215,49 @@ summary(pca.outl)
 ```
 
 ```{r}
-grup_colors <- c("blue", "green")
 biplot(pca)
-colnames(data.BC)
+points(data.BC, pch = 16)
+```
+
+```{r}
+library(ggfortify)
+autoplot(pca, data=data.BC, colour = "CHAS", loadings=TRUE)
+```
+
+```{r}
+library(ggplot2)
+library(viridis)
+
+gradient_colors <- viridis(100)
+palette <- scale_color_gradientn(colours = gradient_colors)
+
+autoplot(pca, data=data.BC, colour = "CRIM", loadings=TRUE, loadings.label = TRUE) +
+  palette
+```
+
+```{r}
+gradient_colors <- viridis(100)
+
+palette <- scale_color_gradientn(colours = gradient_colors)
+
+autoplot(pca, data=data.BC, colour = "RM", loadings=TRUE, loadings.label = TRUE) +
+  palette
+```
+
+```{r}
+gradient_colors <- viridis(100)
+palette <- scale_color_gradientn(colours = gradient_colors)
+
+autoplot(pca, data=data.BC, colour = "TAX", loadings=TRUE, loadings.label = TRUE) +
+  palette
+```
+
+```{r}
+
+gradient_colors <- viridis(100)
+palette <- scale_color_gradientn(colours = gradient_colors)
+
+autoplot(pca, data=data.BC, colour = "AGE", loadings=TRUE, loadings.label = TRUE) +
+  palette
+
 ```
