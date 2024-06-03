@@ -444,6 +444,211 @@ ggplot(mds_data, aes(x = Coordinate1, y = Coordinate2, color = var)) +
   theme_minimal()
 ```
 
+# Multiple Correspondance Analysis
+
+We chose the variables INDUS, RM, RAD, TAX, PTRATIO and LSTAT for this MCA. Thus, we have to convert them to categorical variables, we will use the quartiles as partitions for three groups: low, normal and high.
+```{r}
+set.seed(1)
+# We calculate the quartiles for INDUS
+indus_quartiles <- quantile(data.BC$INDUS, probs = c(0.25, 0.75))
+
+# We use the cut function to categorize INDUS into low, normal, and high
+data.BC$Cat_INDUS <- cut(data.BC$INDUS,
+                    breaks = c(-Inf, indus_quartiles[1], indus_quartiles[2], Inf),
+                    labels = c("low", "normal", "high"),
+                    right = TRUE)
+
+
+# We calculate the quartiles for RM
+RM_quartiles <- quantile(data.BC$RM, probs = c(0.25, 0.75))
+
+# We use the cut function to categorize RM into low, normal, and high
+data.BC$Cat_RM <- cut(data.BC$RM,
+                    breaks = c(-Inf, RM_quartiles[1], RM_quartiles[2], Inf),
+                    labels = c("low", "normal", "high"),
+                    right = TRUE)
+
+# We calculate the quartiles for RAD
+RAD_quartiles <- quantile(data.BC$RAD, probs = c(0.25, 0.6))
+
+# We use the cut function to categorize RAD into low, normal, and high
+data.BC$Cat_RAD <- cut(data.BC$RAD,
+                    breaks = c(-Inf, RAD_quartiles[1], RAD_quartiles[2], Inf),
+                    labels = c("low", "normal", "high"),
+                    right = TRUE)
+
+
+# We calculate the quartiles for TAX
+TAX_quartiles <- quantile(data.BC$TAX, probs = c(0.25, 0.75))
+
+# We use the cut function to categorize TAX into low, normal, and high
+data.BC$Cat_TAX <- cut(data.BC$TAX,
+                    breaks = c(-Inf, TAX_quartiles[1], TAX_quartiles[2], Inf),
+                    labels = c("low", "normal", "high"),
+                    right = TRUE)
+
+# We calculate the quartiles for PTRATIO
+PTRATIO_quartiles <- quantile(data.BC$PTRATIO, probs = c(0.25, 0.75))
+
+# We use the cut function to categorize PTRATIO into low, normal, and high
+data.BC$Cat_PTRATIO <- cut(data.BC$PTRATIO,
+                    breaks = c(-Inf, PTRATIO_quartiles[1], PTRATIO_quartiles[2], Inf),
+                    labels = c("low", "normal", "high"),
+                    right = TRUE)
+
+# We calculate the quartiles for LSTAT
+LSTAT_quartiles <- quantile(data.BC$LSTAT, probs = c(0.25, 0.75))
+
+# We use the cut function to categorize LSTAT into low, normal, and high
+data.BC$Cat_LSTAT <- cut(data.BC$LSTAT,
+                    breaks = c(-Inf, LSTAT_quartiles[1], LSTAT_quartiles[2], Inf),
+                    labels = c("low", "normal", "high"),
+                    right = TRUE)
+
+
+# View the updated dataset
+head(data.BC)
+```
+```{r}
+## Indicator Matrix
+library(FactoMineR)
+tab.disjonctif(data.BC[1:10,15:20])
+```
+## MCA Application on Data using Indicator Matrix
+```{r}
+set.seed(2)
+mca <- MCA(data.BC[,15:20])
+```
+```{r}
+plot(mca, axes = c(1, 3), col.var = "blue", col.ind = "red", title = "Factor Map: Dimension 1 vs Dimension 3")
+```
+
+
+
+```{r}
+summary(mca)
+```
+We choose the dimensions with eigenvalues >1/6 = 0.167, and this are the first 5 dimensions.
+
+```{r}
+summary(mca, ncp=5)
+```
+
+```{r}
+## Coordinates of categories
+mca$var$coord
+```
+## Cloud of Individuals
+```{r}
+set.seed(3)
+plot.MCA(mca,choix="ind",label="none")
+plot.MCA(mca,choix="ind",label="none",invisible="var")
+plot.MCA(mca,choix="ind",label="none",invisible="var",habillage = "Cat_INDUS")
+plot.MCA(mca,choix="ind",label="none",invisible="var",habillage = "Cat_TAX")
+plot.MCA(mca,choix="ind",label="none",invisible="var",habillage = "Cat_PTRATIO")
+plot.MCA(mca,choix="ind",label="none",invisible="var",habillage = "Cat_RM")
+plot.MCA(mca,choix="ind",label="none",invisible="var",habillage = "Cat_LSTAT")
+plot.MCA(mca,choix="ind",label="none",invisible="var",habillage = "Cat_RAD")
+```
+## Cloud of Categories
+
+```{r}
+plot(mca,invisible=c("ind"),title="Graph of the active categories")
+rownames(mca$var$coord)
+plot(mca,invisible=c("ind"),col.var=c(rep(c("black","red"),17),"black",rep("red",4)),title="Graph of the active categories")
+```
+```{r}
+head(data.BC)
+```
+
+## Cloud of variables
+```{r}
+plot(mca,choix="var",title="Cloud of variables")
+```
+```{r}
+#We eliminate the 6 extra categorical variables we created, 
+#to be able to work with the original dataset for the next methods.
+set.seed(4)
+data.BC<- data.BC[, 1:14]
+data.BC.CA <- subset(data.BC, select = -ZN)
+data.BC.CA <- subset(data.BC.CA, select = -CHAS)
+data.BC.CA <- subset(data.BC.CA, select = -B)
+head(data.BC)
+head(data.BC.CA)
+```
+
+## Cluster Analysis
+```{r}
+fc <- scale(data.BC.CA)
+fc <- as.data.frame(fc)
+head(fc)
+d <- dist(fc, method = "euclidean") # distance matrix
+d
+```
+##We aply hierarchical cluster analysis and plot the dendograms.
+
+```{r}
+fit <- hclust(d, method="single") 
+plot(fit,main="Dendrogram of Single Linkage")
+groups <- cutree(fit, k=2 )# c
+rect.hclust(fit, k=2, border="green")
+
+fit1 <- hclust(d, method="complete") 
+plot(fit1,main="Dendrogram of complete Linkage") # Dendogram 
+groups <- cutree(fit1, k=2 )# c
+rect.hclust(fit1, k=2, border="green")
+
+fit2 <- hclust(d, method="average") 
+plot(fit2,main="Dendrogram of Average Linkage") # Dendogram 
+groups <- cutree(fit2, k=2 )# c
+rect.hclust(fit2, k=2, border="green")
+
+fit3 <- hclust(d, method="ward.D2") 
+plot(fit3,main="Dendrogram of Ward Method") # Dendogram 
+groups <- cutree(fit3, k=2 )# c
+rect.hclust(fit3, k=2, border="green")
+
+fit4 <- hclust(d, method="centroid") 
+plot(fit4,main="Dendrogram of Centroid Method") # Dendogram
+groups <- cutree(fit4, k=2 )# c
+rect.hclust(fit4, k=2, border="green")
+```
+```{r}
+aux<-c()
+for (i in 2:6){
+  k<-kmeans(fc,centers=i,nstart=3)
+  aux[i-1]<-k$tot.withinss
+}
+plot(aux, xlab="Number of Clusters", ylab="TWSS", type="l", main="TWSS vs. number of clusters")
+
+aux<-c()
+
+for (i in 2:10){
+  k<-kmeans(fc,centers=i,nstart=25)
+  aux[i]<-((k$betweenss)*(nrow(fc)-i))/((k$tot.withinss)*(i-1))
+}
+
+plot(aux, xlab="Number of Clusters", ylab="Pseudo-F", type="l", main="Pseudo F Index")
+```
+
+```{r}
+k2 <- kmeans(fc, centers = 2, nstart = 25)
+str(k2)
+names(k2)
+```
+
+```{r}
+aggregate(data[, !(names(data.BC) %in% c("CHAS","B","ZN"))],by=list(k2$cluster),FUN=mean)
+data$cluster<-as.numeric(k2$cluster)
+data$cluster
+```
+
+```{r}
+cluster_counts <- table(data$cluster)
+
+# Print the counts
+print(cluster_counts)
+```
 
 # Discriminant Analysis
 First we import the necesssary packages:
