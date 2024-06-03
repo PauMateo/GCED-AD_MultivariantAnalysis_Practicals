@@ -19,7 +19,6 @@ data <- read.csv("HousingData3.csv")
 library(FactoMineR)
 library(factoextra)
 library(ggplot2)
-set.seed(120)
 ```
 
 # EXPLORATOY DATA ANALYSIS
