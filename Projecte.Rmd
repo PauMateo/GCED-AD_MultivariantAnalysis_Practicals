@@ -86,7 +86,7 @@ data[mv_cols, c(1,2,3,4,5)]
 MV imputation:
 
 ```{r, warning=FALSE}
-  library(VIM)
+library(VIM)
 data_imputed <- kNN(data, k = 5)
 data_imputed[mv_cols, c(1,2,3,4,5)]
 ```
@@ -104,12 +104,18 @@ data$CHAS <- factor(data$CHAS)
 ```
 
 ```{r}
+
 for (i in 1:14){
   if (i==4) next
   hist(data[,i],main= paste(colnames(data)[i]), breaks = 15) #vaya distribucions de merda ... xd
   print(colnames(data)[i])
   print(shapiro.test(data[,i]))
 }
+```
+
+```{r}
+library(Hmisc)
+#hist.data.frame(data)
 ```
 
 ## Box-Cox tranformation using optimal lambda
@@ -161,6 +167,15 @@ for (i in 1:14){
 }
 ```
 
+```{r}
+library(ggplot2)
+library(reshape)
+meltdata <- melt(data.BC)
+p <- ggplot(meltdata, aes(factor(variable), value)) 
+p + geom_boxplot() + facet_wrap(~variable, scale="free")
+
+```
+
 B no hauríem de considerar treure els outliers...
 
 ```{r}
@@ -173,7 +188,7 @@ for (i in 1:14){
   upper_bound <- quantile(data.BC[,i], 0.975)
   outlier_ind <- which(data.BC[,i] < lower_bound | data.BC[,i] > upper_bound)
   print(colnames(data.BC)[i])
-  print(sum(outlier_ind/outlier_ind))
+  print((sum(outlier_ind/outlier_ind)/506)*100)
   
   indexs = union(indexs, outlier_ind)
 }
@@ -198,15 +213,15 @@ corrplot(cor(data[, colnames(data)!=c("ZN", "CHAS")]))
 ```{r}
 library(HSAUR)
 
-pca <- princomp(data.BC[, colnames(data)!=c("CHAS")], cor=TRUE)
+pca <- princomp(data.BC[, colnames(data.BC)!=c("CHAS")], cor=TRUE)
 print("PCA whithout outliers treatment")
 summary(pca)
 
 
 
-print(" ")
-print(" ")
-print(" ")
+print("_______________________________________________________")
+print(".......................................................")
+print("_______________________________________________________")
 print("PCA with outliers treatment")
 pca.outl <- princomp(data.BC.outl[, colnames(data)!=c("CHAS")],cor=TRUE)
 summary(pca.outl)
@@ -220,8 +235,28 @@ points(data.BC, pch = 16)
 ```
 
 ```{r}
+pca$eigs > 1
+```
+
+```{r}
+fviz_eig(pca, barcolor = "gray40",barfill = "gray67")
+```
+
+```{r}
 library(ggfortify)
-autoplot(pca, data=data.BC, colour = "CHAS", loadings=TRUE)
+autoplot(pca, data=data.BC, colour = "CHAS", loadings=TRUE,x = 1,y=2,loadings.label = TRUE,loadings.colour = rep("gray23", times=13), 
+         loadings.label.colour=rep("gray23", times=13))
+
+autoplot(pca, data=data.BC, colour = "CHAS", loadings=TRUE,x = 1, y=3,loadings.label = TRUE, loadings.colour = rep("gray23", times=13), 
+         loadings.label.colour=rep("gray23", times=13))
+```
+
+```{r}
+fviz_pca_var(pca,
+             col.var = "cos2", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+)
 ```
 
 ```{r}
@@ -260,4 +295,130 @@ palette <- scale_color_gradientn(colours = gradient_colors)
 autoplot(pca, data=data.BC, colour = "AGE", loadings=TRUE, loadings.label = TRUE) +
   palette
 
+```
+
+## PCA to factor computations
+
+```{r}
+pca$eigs <- pca$sdev^2
+pca$eigs
+```
+
+```{r}
+# aij=sqrt(eig_j)*u_ji
+# A = [aij]
+A <- matrix(0, nrow = nrow(pca$loadings), ncol = 4)
+for (i in 1:nrow(pca$loadings)) {
+  for (j in 1:4) {
+    A[i,j] <- pca$loadings[i, j] * sqrt(pca$eigs[j])
+  }
+}
+
+# Convertim el resultat en un dataframe
+A <- as.data.frame(A)
+colnames(A) <- paste0("Dim", 1:4)
+rownames(A) <- rownames(pca$loadings)
+
+# Mostrem el dataframe
+print(A)
+```
+
+## Factor correlations
+
+```{r}
+components <- matrix(NA, nrow = ncol(pca$loadings), ncol = 4)
+
+for (i in 1:4) {
+  components[, i] <- pca$loadings[, i] * sqrt(pca$sdev[i])
+}
+
+components_df <- as.data.frame(components)
+
+rownames(components_df) <- rownames(pca$loadings)
+colnames(components_df) <- paste0("Dim", 1:4)
+
+print(components_df)
+```
+
+## Comunalities
+
+```{r}
+comunalitats <- matrix(0, nrow = nrow(pca$loadings), ncol = 4)
+for (i in 1:4) {
+  comunalitats[, i] <- (pca$loadings[, i] * sqrt(pca$eigs[i]))^2
+}
+comunalitats_totals <- rowSums(comunalitats)
+comunalitats_df <- as.data.frame(comunalitats)
+colnames(comunalitats_df) <- paste0("Dim", 1:4)
+rownames(comunalitats_df) <- rownames(pca$loadings)
+print(comunalitats_df)
+comunalitats_totals_df <- as.data.frame(comunalitats_totals)
+rownames(comunalitats_totals_df) <- rownames(pca$loadings)
+print(comunalitats_totals_df)
+```
+
+```{r}
+names(data.BC)
+```
+
+# MDS
+
+```{r}
+library(ade4)
+data.scaled <- scale(data.BC[, colnames(data)!=c("CHAS")])
+data.scale.dist <- dist(data.scaled) #euclidean distance
+
+mds <- dudi.pco(data.scale.dist, scannf=FALSE, nf=10)
+
+names(mds)
+summary(mds)
+```
+
+```{r}
+num_eigenvalues <- 10
+eigenvalues <- mds_boston$eig[1:num_eigenvalues]
+eigenvalues_df <- data.frame(Dimension = 1:num_eigenvalues, Eigenvalue = eigenvalues)
+
+# Scree Plot amb ggplot2
+ggplot(eigenvalues_df, aes(x = Dimension, y = Eigenvalue)) +
+  geom_point(size = 3) +
+  geom_line() +
+  scale_x_continuous(breaks = 1:num_eigenvalues) +
+  labs(title = "Scree Plot",
+       x = "Dimensions",
+       y = "Eigenvalue") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+mds_data <- data.frame(Coordinate1 = mds_boston$points[, 1],
+                       Coordinate2 = mds_boston$points[, 2],
+                       var = data.BC$CRIM)
+
+# Fer el plot amb ggplot2
+ggplot(mds_data, aes(x = Coordinate1, y = Coordinate2, color = var)) +
+  geom_point() +
+  scale_color_gradient(low = "blue", high = "red") +
+  labs(title = "MDS on Boston Housing Data",
+       x = "Coordinate 1",
+       y = "Coordinate 2",
+       color = "Crime") +
+  theme_minimal()
+```
+
+```{r}
+mds_data <- data.frame(Coordinate1 = mds_boston$points[, 1],
+                       Coordinate2 = mds_boston$points[, 2],
+                       var = data.BC$CHAS)
+
+# Fer el plot amb ggplot2
+ggplot(mds_data, aes(x = Coordinate1, y = Coordinate2, color = var)) +
+  geom_point() +
+  labs(title = "MDS on Boston Housing Data",
+       x = "Coordinate 1",
+       y = "Coordinate 2",
+       color = "CHAS") +
+  theme_minimal() +
+  scale_color_discrete(name = "RAD")
 ```
