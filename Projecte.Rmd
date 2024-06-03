@@ -244,19 +244,20 @@ fviz_eig(pca, barcolor = "gray40",barfill = "gray67")
 
 ```{r}
 library(ggfortify)
-autoplot(pca, data=data.BC, colour = "CHAS", loadings=TRUE,x = 1,y=2,loadings.label = TRUE,loadings.colour = rep("gray23", times=13), 
-         loadings.label.colour=rep("gray23", times=13))
+autoplot(pca, data=data.BC, colour = "CHAS", loadings=TRUE,x = 1,y=2,loadings.label = TRUE,loadings.colour = rep("gray33", times=13), 
+         loadings.label.colour=rep("black", times=13))
 
-autoplot(pca, data=data.BC, colour = "CHAS", loadings=TRUE,x = 1, y=3,loadings.label = TRUE, loadings.colour = rep("gray23", times=13), 
-         loadings.label.colour=rep("gray23", times=13))
+autoplot(pca, data=data.BC, colour = "CHAS", loadings=TRUE,x = 1, y=3,loadings.label = TRUE, loadings.colour = rep("gray33", times=13), 
+         loadings.label.colour=rep("black", times=13))
 ```
 
 ```{r}
 fviz_pca_var(pca,
              col.var = "cos2", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-)
+             repel = TRUE,     # Avoid text overlapping
+             axes = c(1, 3) 
+             )
 ```
 
 ```{r}
@@ -392,9 +393,13 @@ ggplot(eigenvalues_df, aes(x = Dimension, y = Eigenvalue)) +
 ```
 
 ```{r}
-mds_data <- data.frame(Coordinate1 = mds_boston$points[, 1],
-                       Coordinate2 = mds_boston$points[, 2],
-                       var = data.BC$CRIM)
+
+```
+
+```{r}
+mds_data <- data.frame(Coordinate1 = mds$li[, 1],
+                       Coordinate2 = mds$li[, 2],
+                       var = data.BC$MEDV)
 
 # Fer el plot amb ggplot2
 ggplot(mds_data, aes(x = Coordinate1, y = Coordinate2, color = var)) +
@@ -403,13 +408,13 @@ ggplot(mds_data, aes(x = Coordinate1, y = Coordinate2, color = var)) +
   labs(title = "MDS on Boston Housing Data",
        x = "Coordinate 1",
        y = "Coordinate 2",
-       color = "Crime") +
+       color = "MEDV") +
   theme_minimal()
 ```
 
 ```{r}
-mds_data <- data.frame(Coordinate1 = mds_boston$points[, 1],
-                       Coordinate2 = mds_boston$points[, 2],
+mds_data <- data.frame(Coordinate1 = mds$li[, 1],
+                       Coordinate2 = mds$li[, 3],
                        var = data.BC$CHAS)
 
 # Fer el plot amb ggplot2
@@ -420,9 +425,25 @@ ggplot(mds_data, aes(x = Coordinate1, y = Coordinate2, color = var)) +
        y = "Coordinate 2",
        color = "CHAS") +
   theme_minimal() +
-  scale_color_discrete(name = "RAD")
+  scale_color_discrete(name = "CHAS")
 ```
+
+```{r}
+mds_data <- data.frame(Coordinate1 = mds$li[, 1],
+                       Coordinate2 = mds$li[, 3],
+                       var = data.BC$MEDV)
+
+# Fer el plot amb ggplot2
+ggplot(mds_data, aes(x = Coordinate1, y = Coordinate2, color = var)) +
+  geom_point() +
+  scale_color_gradient(low = "blue", high = "red") +
+  labs(title = "MDS on Boston Housing Data",
+       x = "Coordinate 1",
+       y = "Coordinate 2",
+       color = "MEDV") +
+  theme_minimal()
 ```
+
 
 # Discriminant Analysis
 First we import the necesssary packages:
