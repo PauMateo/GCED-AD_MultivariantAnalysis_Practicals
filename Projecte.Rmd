@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ## R Markdown
 
 ```{r}
-data <- read.csv("C:/Users/pauma/OneDrive/Escritorio/UNI/2n/AD/anàlisi_multivariant/Pràctica/HousingData3.csv")
+data <- read.csv("HousingData3.csv")
 ```
 
 ```{r, warning=FALSE}
