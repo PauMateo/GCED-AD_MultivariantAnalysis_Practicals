@@ -19,6 +19,7 @@ data <- read.csv("C:/Users/pauma/OneDrive/Escritorio/UNI/2n/AD/anàlisi_multivar
 library(FactoMineR)
 library(factoextra)
 library(ggplot2)
+set.seed(120)
 ```
 
 # EXPLORATOY DATA ANALYSIS
