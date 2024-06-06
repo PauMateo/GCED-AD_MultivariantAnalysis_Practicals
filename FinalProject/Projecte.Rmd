@@ -115,7 +115,7 @@ for (i in 1:14){
 
 ```{r}
 library(Hmisc)
-#hist.data.frame(data)
+hist.data.frame(data) #execute in console and zoom it to view it properly in a new window.
 ```
 
 ## Box-Cox tranformation using optimal lambda
@@ -169,7 +169,7 @@ for (i in 1:14){
 
 ```{r}
 library(ggplot2)
-library(reshape)
+library(reshape) #install.packages("reshape") if you haven't
 meltdata <- melt(data.BC)
 p <- ggplot(meltdata, aes(factor(variable), value)) 
 p + geom_boxplot() + facet_wrap(~variable, scale="free")
@@ -377,7 +377,7 @@ summary(mds)
 
 ```{r}
 num_eigenvalues <- 10
-eigenvalues <- mds_boston$eig[1:num_eigenvalues]
+eigenvalues <- mds$eig[1:num_eigenvalues]
 eigenvalues_df <- data.frame(Dimension = 1:num_eigenvalues, Eigenvalue = eigenvalues)
 
 # Scree Plot amb ggplot2
@@ -390,10 +390,6 @@ ggplot(eigenvalues_df, aes(x = Dimension, y = Eigenvalue)) +
        y = "Eigenvalue") +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5))
-```
-
-```{r}
-
 ```
 
 ```{r}
@@ -414,15 +410,15 @@ ggplot(mds_data, aes(x = Coordinate1, y = Coordinate2, color = var)) +
 
 ```{r}
 mds_data <- data.frame(Coordinate1 = mds$li[, 1],
-                       Coordinate2 = mds$li[, 3],
+                       Coordinate3 = mds$li[, 3],
                        var = data.BC$CHAS)
 
 # Fer el plot amb ggplot2
-ggplot(mds_data, aes(x = Coordinate1, y = Coordinate2, color = var)) +
+ggplot(mds_data, aes(x = Coordinate1, y = Coordinate3, color = var)) +
   geom_point() +
   labs(title = "MDS on Boston Housing Data",
        x = "Coordinate 1",
-       y = "Coordinate 2",
+       y = "Coordinate 3",
        color = "CHAS") +
   theme_minimal() +
   scale_color_discrete(name = "CHAS")
@@ -430,16 +426,16 @@ ggplot(mds_data, aes(x = Coordinate1, y = Coordinate2, color = var)) +
 
 ```{r}
 mds_data <- data.frame(Coordinate1 = mds$li[, 1],
-                       Coordinate2 = mds$li[, 3],
+                       Coordinate3 = mds$li[, 3],
                        var = data.BC$MEDV)
 
 # Fer el plot amb ggplot2
-ggplot(mds_data, aes(x = Coordinate1, y = Coordinate2, color = var)) +
+ggplot(mds_data, aes(x = Coordinate1, y = Coordinate3, color = var)) +
   geom_point() +
   scale_color_gradient(low = "blue", high = "red") +
   labs(title = "MDS on Boston Housing Data",
        x = "Coordinate 1",
-       y = "Coordinate 2",
+       y = "Coordinate 3",
        color = "MEDV") +
   theme_minimal()
 ```
@@ -653,14 +649,13 @@ print(cluster_counts)
 # Discriminant Analysis
 First we import the necesssary packages:
 ```{r}
-library(biotools)
-library(DescTools)
+library(biotools) #install.packages("biotools") if not done before
+library(DescTools) #install.packages("DescTools") if not done before
 library(MASS)
-library(klaR)
+library(klaR) #install.packages("klaR") if not done before
 library(e1071)
-library(caTools)
-library(caret)
-library("DescTools")
+library(caTools) #install.packages("caTools") if not done before
+library(caret) #install.packages("caret") if not done before
 library(readxl)
 
 ```
@@ -788,3 +783,4 @@ Qlda
 nyb<-sum(diag(tabnb))
 Qb<-((n-nyb*k)^2)/(n*(k-1))
 Qb  
+```
